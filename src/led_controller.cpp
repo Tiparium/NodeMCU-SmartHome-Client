@@ -60,40 +60,49 @@ void led_controller::scrollPattern(CRGB leds[],int rate, int width, int iteratio
 }
 
 void led_controller::xyBriToRGB(float x, float y, int bri){
-    bri = 1;
     bool debug = true;
-    float z = 1.0f - x - y;
-    float Y = bri;
-    float X = (Y / y) * x;
-    float Z = (Y / y) * z;
+    if (bri < 1e-4) {
+        led_controller::rgb.r = 0;
+        led_controller::rgb.g = 0;
+        led_controller::rgb.b = 0;
+        return;
+    }
+    const float z = 1.f - x - y;
 
-    float r =  X * 1.4628067f - Y * 0.1840623f - Z * 0.2743606f;
-    float g = -X * 0.5217933f + Y * 1.4472381f + Z * 0.0677227f;
-    float b =  X * 0.0349342f - Y * 0.0968930f + Z * 1.2884099f;
+    const float Y = 0.3f;
+    const float X = (Y / y) * x;
+    const float Z = (Y / y) * z;
 
-    r = r <= 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * pow(r, (1.0f / 2.4f)) - 0.055f;
-    g = g <= 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * pow(g, (1.0f / 2.4f)) - 0.055f;
-    b = b <= 0.0031308f ? 12.92f * b : (1.0f + 0.055f) * pow(b, (1.0f / 2.4f)) - 0.055f;
+    const float r = X * 1.656492f - Y * 0.354851f - Z * 0.255038f;
+    const float g = -X * 0.707196f + Y * 1.655397f + Z * 0.036152f;
+    const float b = X * 0.051713f - Y * 0.121364f + Z * 1.011530f;
 
-    double maxVal = std::max((double)r, (double)g);
-    maxVal = std::max(maxVal, (double)b);
+    // Reverse gamma correction
+    const float gammaR = r <= 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * pow(r, (1.0f / 2.4f)) - 0.055f;
+    const float gammaG = g <= 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * pow(g, (1.0f / 2.4f)) - 0.055f;
+    const float gammaB = b <= 0.0031308f ? 12.92f * b : (1.0f + 0.055f) * pow(b, (1.0f / 2.4f)) - 0.055f;
 
-    r /= (float)maxVal;
-    g /= (float)maxVal;
-    b /= (float)maxVal;
+    // Scale color values so that the brightness matches
+    const float maxColor = std::max({ gammaR, gammaG, gammaB });
+    if (maxColor < 1e-4)
+    {
+        led_controller::rgb.r = 0;
+        led_controller::rgb.g = 0;
+        led_controller::rgb.b = 0;
+        return;
+    }
+    const float rScaled = gammaR / maxColor * bri * 255.f;
+    const float gScaled = gammaG / maxColor * bri * 255.f;
+    const float bScaled = gammaB / maxColor * bri * 255.f;
 
-    r = r * 255;
-    g = g * 255;
-    b = b * 255;
-
-    if(r < 0){r = 255;}
-    if(g < 0){g = 255;}
-    if(b < 0){b = 255;}
-
-    led_controller::rgb.r = (int)r;
-    led_controller::rgb.g = (int)g;
-    led_controller::rgb.b = (int)b;
-
+    uint8_t rVal = std::round(std::max(0.f, rScaled));
+    uint8_t gVal = std::round(std::max(0.f, gScaled));
+    uint8_t bVal = std::round(std::max(0.f, bScaled));
+    
+    led_controller::rgb.r = rVal;
+    led_controller::rgb.g = gVal;
+    led_controller::rgb.b = bVal;
+    
     if(debug){
         Serial.print("X: ");
         Serial.println(x);
@@ -102,11 +111,11 @@ void led_controller::xyBriToRGB(float x, float y, int bri){
         Serial.print("Bri: ");
         Serial.println(bri);
         Serial.print("R: ");
-        Serial.println(r);
+        Serial.println(rgb.r);
         Serial.print("G: ");
-        Serial.println(g);
+        Serial.println(rgb.g);
         Serial.print("B: ");
-        Serial.println(b);
+        Serial.println(rgb.b);
         Serial.println("-------------------");
     }
 }
