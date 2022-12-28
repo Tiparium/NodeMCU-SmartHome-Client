@@ -79,24 +79,38 @@ int WebClient::getColorsFromWebServer()
     DynamicJsonDocument json(2000);
     DeserializationError err = deserializeJson(json, _wifiClient);
 
+    String debugStr;
+    serializeJsonPretty(json, debugStr);
+    Serial.println(debugStr);
+
     if(!err)
     {
-        _rgb.r = json["r"];
-        _rgb.g = json["g"];
-        _rgb.b = json["b"];
+        Serial.println("goodData!");
+        std::vector<TIP_RGB> patternBuilder;
+
+        for(int i = 0; i < json["rgbDataPoints"].size(); i++)
+        {
+            TIP_RGB tempRGB;
+            String r = json["rgbDataPoints"][i]["r"];
+            String g = json["rgbDataPoints"][i]["g"];
+            String b = json["rgbDataPoints"][i]["b"];
+
+            tempRGB.r = r.toInt();
+            tempRGB.g = g.toInt();
+            tempRGB.b = b.toInt();
+
+            patternBuilder.push_back(tempRGB);
+        }
+        _rgbPattern = patternBuilder;
+    } else {
+        Serial.println("Bad Data!");
     }
 
-    bool debug = true;
+    bool debug = false;
 
     if(debug)
     {
-        String test;
-        serializeJsonPretty(json, test);
-        Serial.println(test);
-        Serial.println(_rgb.r);
-        Serial.println(_rgb.g);
-        Serial.println(_rgb.b);
-        Serial.println("^-------------------------------^");
+        debugPrintRGBPattern();
     }
 
     return 0;
@@ -111,22 +125,34 @@ void WebClient::initLEDS()
 }
 
 void WebClient::syncLEDS(){
-    bool debug = false;
+    bool debug = true;
     getColorsFromWebServer();
-    CRGB color = {_rgb.r, _rgb.g, _rgb.b};
-    _ledController.color(_leds, color);
+    std::vector<CRGB> pattern;
+    for(int i = 0; i < _rgbPattern.size(); i++)
+    {
+        CRGB color = {_rgbPattern[i].r, _rgbPattern[i].g, _rgbPattern[i].b};
+        pattern.push_back(color);
+        _ledController.staticPattern(_leds, pattern);
+    }
 
-    if(debug){debugPrintRGB();}
+    if(debug){debugPrintRGBPattern();}
 }
 
 // DEBUG
-void WebClient::debugPrintRGB()
+void WebClient::debugPrintRGBPattern()
 {
-    Serial.print("R: ");
-    Serial.println(_rgb.r);
-    Serial.print("G: ");
-    Serial.println(_rgb.g);
-    Serial.print("B: ");
-    Serial.println(_rgb.b);
-    Serial.println("---------------------------------");
+    for(size_t i = 0; i < _rgbPattern.size(); i++)
+    {
+        Serial.print("Item: ");
+        Serial.println(i);
+        Serial.print("R: ");
+        Serial.println(_rgbPattern[i].r);
+        Serial.print("G: ");
+        Serial.println(_rgbPattern[i].g);
+        Serial.print("B: ");
+        Serial.println(_rgbPattern[i].b);
+        Serial.println("---------------------------------");
+    }
+    Serial.println("****_________________________________****");
+
 }

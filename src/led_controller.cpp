@@ -1,29 +1,46 @@
 #include "Arduino.h"
 #include "../src/led_controller.h"
 led_controller::led_controller(int NUM_LEDS, int LED_PIN, CRGB leds[]) {
-  _LED_PIN  = LED_PIN;
-  _NUM_LEDS = NUM_LEDS;
+    _LED_PIN  = LED_PIN;
+    _NUM_LEDS = NUM_LEDS;
 }
 
 // Displays one solid color
 void led_controller::color(CRGB leds[], CRGB color){
-  for(int i = 0; i < _NUM_LEDS; i++){
-    leds[i] = color;
-  }
-  FastLED.show();
+    for(int i = 0; i < _NUM_LEDS; i++)
+    {
+        leds[i] = color;
+    }
+    FastLED.show();
+}
+
+void led_controller::staticPattern(CRGB leds[], std::vector<CRGB> pattern)
+{
+    int patternIndex = 0;
+    for(int i = 0; i < _NUM_LEDS; i++)
+    {
+        leds[i] = pattern[patternIndex];
+
+        patternIndex++;
+        if(patternIndex == pattern.size())
+        {
+            patternIndex = 0;
+        }
+    }
+    FastLED.show();
 }
 
 void led_controller::rainbowScroll(CRGB leds[],int rate, int width, int iterations){
-  CRGB pattern[7];
-  for(int i = 0; i < 7; i++){
-    pattern[i] = _roygbiv[i];
-  }
-  led_controller::scrollPattern(leds, rate, width, iterations, pattern, 7);
+    CRGB pattern[7];
+    for(int i = 0; i < 7; i++){
+        pattern[i] = _roygbiv[i];
+    }
+    led_controller::scrollPattern(leds, rate, width, iterations, pattern, 7);
 }
 
 void led_controller::debugPattern(CRGB leds[]){
-  CRGB pattern[3] = {CRGB::Red, CRGB::DarkGreen, CRGB::Black};
-  led_controller::scrollPattern(leds, 0, 1, 1, pattern, 3);
+    CRGB pattern[3] = {CRGB::Red, CRGB::DarkGreen, CRGB::Black};
+    led_controller::scrollPattern(leds, 0, 1, 1, pattern, 3);
 }
 
 //(w, x, y, z, a, b)
@@ -34,29 +51,29 @@ void led_controller::debugPattern(CRGB leds[]){
 // a: INPUT PATTERN
 // b: INPUT PATTERN SIZE
 void led_controller::scrollPattern(CRGB leds[],int rate, int width, int iterations, CRGB pattern[], int p_size){
-  int index = 0;
-  int color = 0;
-  for(int i = 0; i < _NUM_LEDS; i++){
-    leds[i] = pattern[color];
-    index++;
+    int index = 0;
+    int color = 0;
+    for(int i = 0; i < _NUM_LEDS; i++){
+        leds[i] = pattern[color];
+        index++;
     if(index == width){
-      index = 0;
-      color++;
+        index = 0;
+        color++;
     }
     if(color == p_size)color = 0;    
-  }
-  FastLED.show();
-  if(rate == -1)return;
-  delay(rate);
-  for(int x = 0; x < _NUM_LEDS * iterations; x++){
-    CRGB front = leds[0];
+    }
+    FastLED.show();
+    if(rate == -1)return;
+        delay(rate);
+    for(int x = 0; x < _NUM_LEDS * iterations; x++){
+        CRGB front = leds[0];
     for(int i = 0; i < _NUM_LEDS; i++){
-      leds[i] = leds[i + 1];
+        leds[i] = leds[i + 1];
     }
     leds[_NUM_LEDS - 1] = front;
     FastLED.show();
     delay(rate);
-  }
+    }
 }
 
 void led_controller::xyBriToRGB(float x, float y, int bri){

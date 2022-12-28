@@ -24,15 +24,15 @@ class WebClient
 public:
 
     // Wifi Client
-    int connectToWifi();
-    int getColorsFromWebServer();
+    int     connectToWifi();
+    int     getColorsFromWebServer();
 
     //RGB Controller
     void    initLEDS();
     void    syncLEDS();
 
     // Debug
-    void debugPrintRGB();
+    void debugPrintRGBPattern();
 
 private:
     // Wifi Client
@@ -43,6 +43,7 @@ private:
     WiFiClient  _wifiClient;
 
     // RGB Controller
+    std::vector<TIP_RGB>    _rgbPattern;
     TIP_RGB          _rgb = TIP_RGB(0, 0, 0);
     static const int _numLEDS = 9; // 9 for microtesting, 300 for whole strip, 175 far large scale testing
     CRGB             _leds[_numLEDS];

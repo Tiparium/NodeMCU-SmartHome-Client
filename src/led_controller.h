@@ -12,6 +12,7 @@ class led_controller {
     } rgb;
     led_controller(int NUM_LEDS, int LED_PIN, CRGB leds[]);
     void color(CRGB leds[], CRGB color);
+    void staticPattern(CRGB leds[], std::vector<CRGB> pattern);
     void rainbowScroll(CRGB leds[], int rate, int width, int iterations);
     void debugPattern(CRGB leds[]);
     void scrollPattern(CRGB leds[], int rate, int width, int iterations, CRGB[], int p_size);

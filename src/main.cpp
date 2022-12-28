@@ -30,6 +30,6 @@ void setup()
 
 void loop()
 {
-    delay(100);
+    delay(200);
     _webClient.syncLEDS();
 }
