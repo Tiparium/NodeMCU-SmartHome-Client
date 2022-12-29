@@ -31,5 +31,6 @@ void setup()
 void loop()
 {
     delay(200);
+    _webClient.getColorsFromWebServer();
     _webClient.syncLEDS();
 }

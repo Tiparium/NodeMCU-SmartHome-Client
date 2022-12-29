@@ -76,7 +76,7 @@ int WebClient::getColorsFromWebServer()
         Serial.println("BAD");
     }
 
-    DynamicJsonDocument json(2000);
+    DynamicJsonDocument json(10000);
     DeserializationError err = deserializeJson(json, _wifiClient);
 
     String debugStr;
@@ -125,17 +125,7 @@ void WebClient::initLEDS()
 }
 
 void WebClient::syncLEDS(){
-    bool debug = true;
-    getColorsFromWebServer();
-    std::vector<CRGB> pattern;
-    for(int i = 0; i < _rgbPattern.size(); i++)
-    {
-        CRGB color = {_rgbPattern[i].r, _rgbPattern[i].g, _rgbPattern[i].b};
-        pattern.push_back(color);
-        _ledController.staticPattern(_leds, pattern);
-    }
-
-    if(debug){debugPrintRGBPattern();}
+    _ledController.staticPattern(_leds, _rgbPattern);
 }
 
 // DEBUG

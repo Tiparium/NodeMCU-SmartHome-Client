@@ -14,20 +14,32 @@ void led_controller::color(CRGB leds[], CRGB color){
     FastLED.show();
 }
 
-void led_controller::staticPattern(CRGB leds[], std::vector<CRGB> pattern)
+void led_controller::staticPattern(CRGB leds[], std::vector<TIP_RGB> newPattern)
 {
-    int patternIndex = 0;
-    for(int i = 0; i < _NUM_LEDS; i++)
+    if(!checkRGBPatternEquality(_localRGBPattern, newPattern))
     {
-        leds[i] = pattern[patternIndex];
+        _localRGBPattern = newPattern;
+        std::vector<CRGB> patternToDisplay;
 
-        patternIndex++;
-        if(patternIndex == pattern.size())
+        for(int i = 0; i < _localRGBPattern.size(); i++)
         {
-            patternIndex = 0;
+            CRGB color = {_localRGBPattern[i].r, _localRGBPattern[i].g, _localRGBPattern[i].b};
+            patternToDisplay.push_back(color);
+        }
+
+        int patternIndex = 0;
+        for(int i = 0; i < _NUM_LEDS; i++)
+        {
+            leds[i] = patternToDisplay[patternIndex];
+
+            patternIndex++;
+            if(patternIndex == patternToDisplay.size())
+            {
+                patternIndex = 0;
+            }
+            FastLED.show();
         }
     }
-    FastLED.show();
 }
 
 void led_controller::rainbowScroll(CRGB leds[],int rate, int width, int iterations){
@@ -135,4 +147,18 @@ void led_controller::xyBriToRGB(float x, float y, int bri){
         Serial.println(rgb.b);
         Serial.println("-------------------");
     }
+}
+
+bool led_controller::checkRGBPatternEquality(std::vector<TIP_RGB> oldData, std::vector<TIP_RGB> newData)
+{
+    bool out = true;
+    if(oldData.size() != newData.size()){ out = false; }
+    for(int i = 0; i < oldData.size(); i++)
+    {
+        if(!oldData[i].isEqualTo(newData[i]))
+        {
+            out = false;
+        }
+    }
+    return out;
 }
