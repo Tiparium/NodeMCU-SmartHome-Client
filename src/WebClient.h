@@ -45,7 +45,7 @@ private:
     // RGB Controller
     std::vector<TIP_RGB>    _rgbPattern;
     TIP_RGB          _rgb = TIP_RGB(0, 0, 0);
-    static const int _numLEDS = 9; // 9 for microtesting, 300 for whole strip, 175 far large scale testing
+    static const int _numLEDS = 28; // 9 for microtesting, 300 for whole strip, 175 far large scale testing
     CRGB             _leds[_numLEDS];
     led_controller   _ledController = led_controller(_numLEDS, _led_pin, _leds);
 };
